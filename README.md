@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dashboard Homelab
 
-## Getting Started
+Panel de acceso rápido a los servicios del homelab. Permite listar, crear y marcar enlaces como favoritos, con persistencia en PostgreSQL.
 
-First, run the development server:
+## Requisitos
+
+- [Bun](https://bun.sh/) (desarrollo local)
+- PostgreSQL
+- [Docker](https://docs.docker.com/get-docker/) (despliegue en contenedor)
+
+## Desarrollo local
+
+1. Copia las variables de entorno:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Edita `.env` con los datos de tu base de datos:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=dashboard_homelab
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_SCHEMA=public
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Instala dependencias y aplica migraciones:
 
-## Learn More
+```bash
+bun install
+bun run db:migrate
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Inicia el servidor de desarrollo:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Abre [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## Despliegue con Docker
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1. Instalar Docker
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Si aún no tienes Docker en el servidor:
+
+- **Linux:** [Instalar Docker Engine](https://docs.docker.com/engine/install/)
+- **Windows / macOS:** [Docker Desktop](https://docs.docker.com/get-docker/)
+
+Verifica la instalación:
+
+```bash
+docker --version
+```
+
+### 2. Construir la imagen
+
+Desde la raíz del proyecto:
+
+```bash
+docker build -t dashboard-homelab .
+```
+
+### 3. Ejecutar el contenedor
+
+Pasa las variables de base de datos en tiempo de ejecución:
+
+```bash
+docker run -d \
+  --name dashboard-homelab \
+  -p 3000:3000 \
+  -e DATABASE_HOST=192.168.1.12 \
+  -e DATABASE_PORT=5432 \
+  -e DATABASE_NAME=db_dashboard_homelab \
+  -e DATABASE_USER=postgres \
+  -e DATABASE_PASSWORD=tu_password \
+  -e DATABASE_SCHEMA=public \
+  dashboard-homelab
+```
+
+La app quedará disponible en [http://localhost:3000](http://localhost:3000).
+
+Al iniciar, el contenedor ejecuta automáticamente `prisma migrate deploy` para aplicar las migraciones pendientes.
+
+### Opciones útiles
+
+**Omitir migraciones al arrancar** (si las aplicas por separado):
+
+```bash
+docker run -d \
+  --name dashboard-homelab \
+  -p 3000:3000 \
+  -e SKIP_MIGRATIONS=true \
+  -e DATABASE_HOST=192.168.1.12 \
+  -e DATABASE_PORT=5432 \
+  -e DATABASE_NAME=db_dashboard_homelab \
+  -e DATABASE_USER=postgres \
+  -e DATABASE_PASSWORD=tu_password \
+  dashboard-homelab
+```
+
+**Ver logs del contenedor:**
+
+```bash
+docker logs -f dashboard-homelab
+```
+
+**Detener y eliminar el contenedor:**
+
+```bash
+docker stop dashboard-homelab
+docker rm dashboard-homelab
+```
+
+**Actualizar a una nueva versión:**
+
+```bash
+docker build -t dashboard-homelab .
+docker stop dashboard-homelab
+docker rm dashboard-homelab
+# Vuelve a ejecutar docker run con las mismas variables de entorno
+```
+
+## Scripts disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `bun run dev` | Servidor de desarrollo |
+| `bun run build` | Build de producción |
+| `bun run start` | Iniciar build local |
+| `bun run db:migrate` | Aplicar migraciones (desarrollo) |
+| `bun run db:push` | Sincronizar esquema sin migraciones |
+| `bun run db:studio` | Abrir Prisma Studio |
