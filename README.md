@@ -84,24 +84,9 @@ docker run -d \
 
 La app quedará disponible en [http://localhost:3000](http://localhost:3000).
 
-Al iniciar, el contenedor ejecuta automáticamente `prisma migrate deploy` para aplicar las migraciones pendientes.
+> **Nota:** Las migraciones de base de datos se aplican fuera del contenedor, por ejemplo con `bun run db:migrate` en desarrollo o `prisma migrate deploy` en el servidor antes de desplegar.
 
 ### Opciones útiles
-
-**Omitir migraciones al arrancar** (si las aplicas por separado):
-
-```bash
-docker run -d \
-  --name dashboard-homelab \
-  -p 3000:3000 \
-  -e SKIP_MIGRATIONS=true \
-  -e DATABASE_HOST=192.168.1.12 \
-  -e DATABASE_PORT=5432 \
-  -e DATABASE_NAME=db_dashboard_homelab \
-  -e DATABASE_USER=postgres \
-  -e DATABASE_PASSWORD=tu_password \
-  dashboard-homelab
-```
 
 **Ver logs del contenedor:**
 

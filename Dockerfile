@@ -4,7 +4,7 @@
 FROM oven/bun:1-alpine AS deps
 WORKDIR /app
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # --- Build ---
 FROM oven/bun:1-alpine AS builder
@@ -13,15 +13,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-# Valores ficticios solo para prisma generate durante el build
-ENV DATABASE_HOST=localhost
-ENV DATABASE_PORT=5432
-ENV DATABASE_NAME=build
-ENV DATABASE_USER=build
-ENV DATABASE_PASSWORD=build
-ENV DATABASE_SCHEMA=public
 
-RUN bun run build
+RUN DATABASE_HOST=localhost \
+    DATABASE_PORT=5432 \
+    DATABASE_NAME=build \
+    DATABASE_USER=build \
+    DATABASE_PASSWORD=build \
+    DATABASE_SCHEMA=public \
+    bun run build
 
 # --- Producción (standalone) ---
 FROM node:20-alpine AS runner
@@ -39,18 +38,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Archivos necesarios para migraciones en runtime
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/lib/database-url.ts ./lib/database-url.ts
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
-
-COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
-
 USER nextjs
 EXPOSE 3000
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["node", "server.js"]
