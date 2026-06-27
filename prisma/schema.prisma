@@ -16,3 +16,16 @@ model Enlace {
 
   @@map("enlaces")
 }
+
+model Acceso {
+  id            Int      @id @default(autoincrement())
+  proyecto      String   @default("General")
+  servicio      String?
+  entorno       String?
+  descripcion   String?
+  contenido     String
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@map("accesos")
+}

@@ -3,7 +3,8 @@
 import { useCallback, useMemo, useState } from "react";
 import type { EnlaceItem } from "@/lib/enlaces";
 import { AppCard } from "@/components/dashboard/app-card";
-import { CreateEnlaceDialog } from "@/components/dashboard/create-enlace-dialog";
+import { EnlaceFormDialog } from "@/components/dashboard/enlace-form-dialog";
+import { SiteNav } from "@/components/site-nav";
 
 type DashboardViewProps = {
   enlaces: EnlaceItem[];
@@ -37,6 +38,10 @@ export function DashboardView({ enlaces }: DashboardViewProps) {
           Seleccione un servicio. Los enlaces se abren en una nueva pestaña.
         </p>
       </header>
+
+      <div className="mb-8 w-full">
+        <SiteNav active="enlaces" />
+      </div>
 
       <div className="mb-10 inline-flex rounded-full border border-white/10 bg-white/4 p-1">
         <button
@@ -107,7 +112,7 @@ export function DashboardView({ enlaces }: DashboardViewProps) {
       </section>
 
       {createOpen ? (
-        <CreateEnlaceDialog
+        <EnlaceFormDialog
           key={createFormKey}
           open={createOpen}
           onClose={handleCloseCreateDialog}

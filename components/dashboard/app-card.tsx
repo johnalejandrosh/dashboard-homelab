@@ -4,6 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { toggleFavorito } from "@/app/actions/enlaces";
 import { getIconStyle, getIconVariant } from "@/lib/icon-style";
 import { ServiceIcon } from "@/components/dashboard/service-icon";
+import { EnlaceDetailDialog } from "@/components/dashboard/enlace-detail-dialog";
+import { EnlaceFormDialog } from "@/components/dashboard/enlace-form-dialog";
+import type { EnlaceItem } from "@/lib/enlaces";
 
 type AppCardProps = {
   id: number;
@@ -21,6 +24,8 @@ export function AppCard({
   favorito: initialFavorito,
 }: AppCardProps) {
   const [favorito, setFavorito] = useState(initialFavorito);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -28,6 +33,8 @@ export function AppCard({
   }, [initialFavorito]);
   const style = getIconStyle(nombre);
   const variant = getIconVariant(nombre);
+
+  const enlace: EnlaceItem = { id, nombre, url, descripcion, favorito };
 
   function handleToggleFavorito(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -46,6 +53,12 @@ export function AppCard({
 
       setFavorito(result.favorito);
     });
+  }
+
+  function handleOpenDetail(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setDetailOpen(true);
   }
 
   return (
@@ -79,6 +92,16 @@ export function AppCard({
         >
           {favorito ? "★" : "☆"}
         </button>
+
+        <button
+          type="button"
+          onClick={handleOpenDetail}
+          aria-label="Ver detalles del enlace"
+          title="Ver detalles"
+          className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-white/12 bg-[#121a2e]/90 text-xs leading-none text-white/45 opacity-0 transition-all group-hover:opacity-100 hover:border-white/25 hover:text-white"
+        >
+          ⋯
+        </button>
       </div>
 
       <a
@@ -89,6 +112,27 @@ export function AppCard({
       >
         {nombre}
       </a>
+
+      {detailOpen ? (
+        <EnlaceDetailDialog
+          enlace={enlace}
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+          onEdit={() => {
+            setDetailOpen(false);
+            setEditOpen(true);
+          }}
+        />
+      ) : null}
+
+      {editOpen ? (
+        <EnlaceFormDialog
+          key={`edit-${id}`}
+          open={editOpen}
+          enlace={enlace}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,9 +1,9 @@
-export type CreateEnlaceState = {
+export type EnlaceFormState = {
   error: string | null;
   success: boolean;
 };
 
-export const createEnlaceInitialState: CreateEnlaceState = {
+export const enlaceFormInitialState: EnlaceFormState = {
   error: null,
   success: false,
 };

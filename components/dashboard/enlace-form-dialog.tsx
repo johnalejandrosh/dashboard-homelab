@@ -1,23 +1,27 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { createEnlace } from "@/app/actions/enlaces";
-import { createEnlaceInitialState } from "@/lib/enlace-form";
+import { createEnlace, updateEnlace } from "@/app/actions/enlaces";
+import { enlaceFormInitialState } from "@/lib/enlace-form";
+import type { EnlaceItem } from "@/lib/enlaces";
 
-type CreateEnlaceDialogProps = {
+type EnlaceFormDialogProps = {
   open: boolean;
   onClose: () => void;
+  /** Si se entrega, el diálogo opera en modo edición. */
+  enlace?: EnlaceItem;
 };
 
 const inputClassName =
   "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-white/30 focus:border-white/25 focus:bg-white/8";
 
-export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
+export function EnlaceFormDialog({ open, onClose, enlace }: EnlaceFormDialogProps) {
+  const isEdit = enlace !== undefined;
   const formRef = useRef<HTMLFormElement>(null);
   const handledSuccessRef = useRef(false);
   const [state, formAction, pending] = useActionState(
-    createEnlace,
-    createEnlaceInitialState,
+    isEdit ? updateEnlace : createEnlace,
+    enlaceFormInitialState,
   );
 
   useEffect(() => {
@@ -61,20 +65,21 @@ export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="create-enlace-title"
+        aria-labelledby="enlace-form-title"
         className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#121a2e] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.5)]"
       >
-        <h2
-          id="create-enlace-title"
-          className="text-lg font-semibold text-white"
-        >
-          Nuevo enlace
+        <h2 id="enlace-form-title" className="text-lg font-semibold text-white">
+          {isEdit ? "Editar enlace" : "Nuevo enlace"}
         </h2>
         <p className="mt-1 text-sm text-white/45">
-          Agrega un servicio al dashboard homelab.
+          {isEdit
+            ? "Actualiza los datos del servicio."
+            : "Agrega un servicio al dashboard homelab."}
         </p>
 
         <form ref={formRef} action={formAction} className="mt-6 space-y-4">
+          {isEdit ? <input type="hidden" name="id" value={enlace.id} /> : null}
+
           <div>
             <label
               htmlFor="nombre"
@@ -88,6 +93,7 @@ export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
               type="text"
               required
               maxLength={100}
+              defaultValue={enlace?.nombre}
               placeholder="Ej. Portainer"
               className={inputClassName}
               disabled={pending}
@@ -106,6 +112,7 @@ export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
               name="url"
               type="url"
               required
+              defaultValue={enlace?.url}
               placeholder="https://portainer.local"
               className={inputClassName}
               disabled={pending}
@@ -117,12 +124,11 @@ export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
               id="favorito"
               name="favorito"
               type="checkbox"
+              defaultChecked={enlace?.favorito}
               disabled={pending}
               className="h-4 w-4 rounded border-white/20 bg-white/5 accent-amber-400"
             />
-            <span className="text-sm text-white/80">
-              Marcar como favorito
-            </span>
+            <span className="text-sm text-white/80">Marcar como favorito</span>
           </label>
 
           <div>
@@ -140,6 +146,7 @@ export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
               name="descripcion"
               rows={3}
               maxLength={500}
+              defaultValue={enlace?.descripcion ?? ""}
               placeholder="Breve descripción del servicio"
               className={`${inputClassName} resize-none`}
               disabled={pending}
@@ -166,7 +173,11 @@ export function CreateEnlaceDialog({ open, onClose }: CreateEnlaceDialogProps) {
               disabled={pending}
               className="rounded-full bg-white px-5 py-2 text-sm font-medium text-slate-900 transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {pending ? "Guardando..." : "Crear enlace"}
+              {pending
+                ? "Guardando..."
+                : isEdit
+                  ? "Guardar cambios"
+                  : "Crear enlace"}
             </button>
           </div>
         </form>

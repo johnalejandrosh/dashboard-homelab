@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import type { CreateEnlaceState } from "@/lib/enlace-form";
+import type { EnlaceFormState } from "@/lib/enlace-form";
 
 function normalizeUrl(value: string): string | null {
   const trimmed = value.trim();
@@ -26,10 +26,18 @@ function normalizeUrl(value: string): string | null {
   }
 }
 
-export async function createEnlace(
-  _prevState: CreateEnlaceState,
-  formData: FormData,
-): Promise<CreateEnlaceState> {
+type EnlaceData = {
+  nombre: string;
+  url: string;
+  descripcion: string | null;
+  favorito: boolean;
+};
+
+type ValidationResult =
+  | { ok: true; data: EnlaceData }
+  | { ok: false; error: string };
+
+function validateEnlaceForm(formData: FormData): ValidationResult {
   const nombre = String(formData.get("nombre") ?? "").trim();
   const urlInput = String(formData.get("url") ?? "").trim();
   const descripcionRaw = String(formData.get("descripcion") ?? "").trim();
@@ -37,35 +45,46 @@ export async function createEnlace(
   const favorito = formData.get("favorito") === "on";
 
   if (!nombre) {
-    return { error: "El nombre es obligatorio.", success: false };
+    return { ok: false, error: "El nombre es obligatorio." };
   }
 
   if (nombre.length > 100) {
-    return { error: "El nombre no puede superar los 100 caracteres.", success: false };
+    return { ok: false, error: "El nombre no puede superar los 100 caracteres." };
   }
 
   const url = normalizeUrl(urlInput);
 
   if (!url) {
-    return { error: "Ingresa una URL válida (http o https).", success: false };
+    return { ok: false, error: "Ingresa una URL válida (http o https)." };
   }
 
   if (descripcion && descripcion.length > 500) {
     return {
+      ok: false,
       error: "La descripción no puede superar los 500 caracteres.",
-      success: false,
     };
   }
 
+  return { ok: true, data: { nombre, url, descripcion, favorito } };
+}
+
+function parseId(value: FormDataEntryValue | null): number | null {
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+export async function createEnlace(
+  _prevState: EnlaceFormState,
+  formData: FormData,
+): Promise<EnlaceFormState> {
+  const result = validateEnlaceForm(formData);
+
+  if (!result.ok) {
+    return { error: result.error, success: false };
+  }
+
   try {
-    await prisma.enlace.create({
-      data: {
-        nombre,
-        url,
-        descripcion,
-        favorito,
-      },
-    });
+    await prisma.enlace.create({ data: result.data });
 
     revalidatePath("/");
 
@@ -75,6 +94,75 @@ export async function createEnlace(
       error: "No se pudo guardar el enlace. Verifica la conexión a la base de datos.",
       success: false,
     };
+  }
+}
+
+export async function updateEnlace(
+  _prevState: EnlaceFormState,
+  formData: FormData,
+): Promise<EnlaceFormState> {
+  const id = parseId(formData.get("id"));
+
+  if (id === null) {
+    return { error: "Enlace no válido.", success: false };
+  }
+
+  const result = validateEnlaceForm(formData);
+
+  if (!result.ok) {
+    return { error: result.error, success: false };
+  }
+
+  try {
+    const existing = await prisma.enlace.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return { error: "El enlace no existe.", success: false };
+    }
+
+    await prisma.enlace.update({
+      where: { id },
+      data: result.data,
+    });
+
+    revalidatePath("/");
+
+    return { error: null, success: true };
+  } catch {
+    return {
+      error: "No se pudo actualizar el enlace. Verifica la conexión a la base de datos.",
+      success: false,
+    };
+  }
+}
+
+export async function deleteEnlace(
+  id: number,
+): Promise<{ success: true } | { error: string }> {
+  if (!Number.isInteger(id) || id <= 0) {
+    return { error: "Enlace no válido." };
+  }
+
+  try {
+    const existing = await prisma.enlace.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return { error: "El enlace no existe." };
+    }
+
+    await prisma.enlace.delete({ where: { id } });
+
+    revalidatePath("/");
+
+    return { success: true };
+  } catch {
+    return { error: "No se pudo eliminar el enlace." };
   }
 }
 

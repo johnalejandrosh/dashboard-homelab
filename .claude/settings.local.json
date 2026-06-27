@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"\\\\\\\\\\\\\\\\wsl.localhost\\\\\\\\Debian\\\\\\\\home\\\\\\\\johnr\\\\\\\\dashboard-homelab\" 2>/dev/null; ls -la; echo \"---PACKAGE---\"; cat package.json 2>/dev/null | head -50)",
+      "Read(///wsl.localhost/Debian/home/johnr/**)",
+      "Bash(cd \"\\\\\\\\\\\\\\\\wsl.localhost\\\\\\\\Debian\\\\\\\\home\\\\\\\\johnr\\\\\\\\dashboard-homelab\" 2>/dev/null; echo \"===APP===\"; find app -type f | head -50; echo \"===COMPONENTS===\"; find components -type f; echo \"===LIB===\"; find lib -type f; echo \"===PRISMA===\"; cat prisma/schema.prisma)",
+      "Bash(cd \"\\\\\\\\\\\\\\\\wsl.localhost\\\\\\\\Debian\\\\\\\\home\\\\\\\\johnr\\\\\\\\dashboard-homelab\")",
+      "Bash(rm -f components/dashboard/create-enlace-dialog.tsx)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"---EXIT: $?---\")",
+      "Bash(node ./node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(node ./node_modules/eslint/bin/eslint.js components/dashboard app/actions lib)",
+      "Bash(echo \"---EXIT $?---\")",
+      "Bash(sed 's/=.*/=***/' .env)",
+      "Bash(node ./node_modules/prisma/build/index.js migrate status)",
+      "Bash(node -e \"require\\('dotenv/config'\\); const {buildDatabaseUrl}=require\\('./lib/database-url.ts'\\); \")",
+      "Bash(cd \"\\\\\\\\\\\\\\\\wsl.localhost\\\\\\\\Debian\\\\\\\\home\\\\\\\\johnr\\\\\\\\dashboard-homelab\" 2>/dev/null; grep -n \"Datasource\" node_modules/@prisma/config/dist/index.d.ts | head; echo \"---\"; sed -n '40,99p' node_modules/@prisma/config/dist/index.d.ts)",
+      "Bash(node -e ' *)",
+      "Bash(node ./node_modules/prisma/build/index.js validate)",
+      "Bash(node ./node_modules/prisma/build/index.js migrate status --config ./prisma.config.ts)",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && pwd && node -v && \\(command -v bun && bun --version || echo \"no bun\"\\) && ls node_modules/.bin/prisma >/dev/null 2>&1 && echo \"prisma bin ok\"')",
+      "Bash(wsl -d Debian -- bash -lc 'ls -d /home/johnr/.bun/bin 2>/dev/null; ls /home/johnr/.bun/bin 2>/dev/null; echo \"--- nvm node versions ---\"; ls /home/johnr/.nvm/versions/node 2>/dev/null; echo \"--- which after sourcing nvm ---\"; [ -s /home/johnr/.nvm/nvm.sh ] && . /home/johnr/.nvm/nvm.sh && which node bun 2>/dev/null; echo \"--- bashrc hints ---\"; grep -iE \"nvm|bun|fnm|volta|export PATH\" /home/johnr/.bashrc 2>/dev/null | head')",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && export NVM_DIR=$HOME/.nvm && . $NVM_DIR/nvm.sh && node ./node_modules/prisma/build/index.js migrate status 2>&1 | head -30')",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && PATH=\"/home/johnr/.nvm/versions/node/v22.20.0/bin:$PATH\" && node -v && node ./node_modules/prisma/build/index.js migrate status 2>&1 | head -30')",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && PATH=\"/home/johnr/.nvm/versions/node/v22.20.0/bin:$PATH\" && node ./node_modules/prisma/build/index.js migrate dev --name add_accesos 2>&1 | head -40')",
+      "Bash(grep -c \"acceso\" app/generated/prisma/client.ts)",
+      "Bash(grep -rln \"Acceso\" app/generated/prisma/models/)",
+      "Bash(cd \"\\\\\\\\\\\\\\\\wsl.localhost\\\\\\\\Debian\\\\\\\\home\\\\\\\\johnr\\\\\\\\dashboard-homelab\" 2>/dev/null; ls app/generated/prisma/models/ 2>/dev/null; echo \"---grep Acceso anywhere in generated---\"; grep -rln \"Acceso\" app/generated/prisma/ 2>/dev/null | head)",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && PATH=\"/home/johnr/.nvm/versions/node/v22.20.0/bin:$PATH\" && node ./node_modules/prisma/build/index.js generate 2>&1 | tail -15')",
+      "Bash(grep -rln \"acceso\" app/generated/prisma/client.ts app/generated/prisma/internal/class.ts)",
+      "Bash(node ./node_modules/eslint/bin/eslint.js components/accesos components/site-nav.tsx app/accesos app/actions/accesos.ts lib/accesos.ts lib/acceso-form.ts)",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && PATH=\"/home/johnr/.nvm/versions/node/v22.20.0/bin:$PATH\" && node ./node_modules/next/dist/bin/next build 2>&1 | tail -45')",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && PATH=\"/home/johnr/.nvm/versions/node/v22.20.0/bin:$PATH\" && node ./node_modules/prisma/build/index.js migrate deploy 2>&1 | tail -20 && echo \"=== GENERATE ===\" && node ./node_modules/prisma/build/index.js generate 2>&1 | tail -5 && echo \"=== STATUS ===\" && node ./node_modules/prisma/build/index.js migrate status 2>&1 | tail -8')",
+      "Bash(rm -f components/accesos/acceso-card.tsx)",
+      "Bash(node ./node_modules/eslint/bin/eslint.js components/accesos components/site-nav.tsx app/accesos app/actions/accesos.ts lib/accesos.ts lib/acceso-form.ts lib/entornos.ts)",
+      "Bash(wsl -d Debian -- bash -lc 'cd /home/johnr/dashboard-homelab && PATH=\"/home/johnr/.nvm/versions/node/v22.20.0/bin:$PATH\" && node ./node_modules/next/dist/bin/next build 2>&1 | tail -30')",
+      "Bash(node ./node_modules/eslint/bin/eslint.js components/accesos)"
+    ]
+  }
+}
